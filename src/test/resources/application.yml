@@ -9,3 +9,7 @@ spring:
   sql:
     init:
       schema-locations: classpath:db/schema.sql
+
+services:
+  inventory-ticket-price:
+    url: http://127.0.0.1:8001
