@@ -2,8 +2,10 @@ package com.thoughtworks.airticketorder.service;
 
 import com.thoughtworks.airticketorder.client.InventoryTicketPriceClient;
 import com.thoughtworks.airticketorder.client.response.ClientResponse;
+import com.thoughtworks.airticketorder.client.response.FlightRequestResponse;
 import com.thoughtworks.airticketorder.client.response.InventoryLockResponse;
 import com.thoughtworks.airticketorder.dto.ClassType;
+import com.thoughtworks.airticketorder.exceptions.ThirdServiceException;
 import com.thoughtworks.airticketorder.repository.OrderRepository;
 import com.thoughtworks.airticketorder.repository.entity.OrderEntity;
 import com.thoughtworks.airticketorder.service.dto.OrderCreate;
@@ -45,6 +47,21 @@ class OrderServiceTest {
         when(inventoryTicketPriceClient.lockInventory(any())).thenReturn(
                 new ClientResponse<>(0, "", new InventoryLockResponse("5d8y6v"))
         );
+
+        final OrderCreated orderCreated = orderService.createOrder(
+                new OrderCreate(123, "flightId", ClassType.ECONOMY, BigDecimal.valueOf(2000)));
+
+        assertEquals(234, orderCreated.getId());
+    }
+
+    @Test
+    void shouldCreateOrderSuccessWhenGetLockInventoryResponseFailed() {
+        when(orderRepository.save(any())).thenReturn(
+                OrderEntity.builder().id(234) .build()
+        );
+        when(inventoryTicketPriceClient.lockInventory(any())).thenThrow(new ThirdServiceException());
+        when(inventoryTicketPriceClient.getFlightRequest(any())).thenReturn(
+                new ClientResponse<>(0, "", new FlightRequestResponse("5d8y6v")));
 
         final OrderCreated orderCreated = orderService.createOrder(
                 new OrderCreate(123, "flightId", ClassType.ECONOMY, BigDecimal.valueOf(2000)));
