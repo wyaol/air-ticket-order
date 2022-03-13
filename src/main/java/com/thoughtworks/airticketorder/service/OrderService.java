@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Function;
 
 @Service
 @RequiredArgsConstructor
@@ -30,7 +31,7 @@ public class OrderService {
     );
 
     public OrderCreated createOrder(OrderCreate orderCreate) {
-        String flightOrderId = getFlightOrderId(orderCreate);
+        String flightOrderId = retryMethod(this::getFlightOrderId, orderCreate, FlightRequestNotFoundException.class, 6);
 
         final OrderEntity orderEntity = orderRepository.save(OrderEntity.builder()
                 .insuranceOrderId(null)
@@ -43,19 +44,6 @@ public class OrderService {
     }
 
     private String getFlightOrderId(OrderCreate orderCreate) {
-        return retryGetFlightOrderId(orderCreate, 0, 6);
-    }
-
-    private String retryGetFlightOrderId(OrderCreate orderCreate, int retryTime, int maxRetryTime) {
-        if (retryTime == maxRetryTime) throw new ServiceErrorException();
-        try {
-            return _getFlightOrderId(orderCreate);
-        } catch (FlightRequestNotFoundException e) {
-            return retryGetFlightOrderId(orderCreate, retryTime + 1, maxRetryTime);
-        }
-    }
-
-    private String _getFlightOrderId(OrderCreate orderCreate) {
         final String requestId = UUID.randomUUID().toString();
         String flightOrderId;
         try {
@@ -66,8 +54,7 @@ public class OrderService {
             flightOrderId = response.getFlightOrderId();
         } catch (ServiceErrorException e) {
             try {
-                final FlightRequestResponse response = extractClientResponse(inventoryTicketPriceClient.getFlightRequest(requestId));
-                flightOrderId = response.getFlightOrderId();
+                flightOrderId = retryMethod(this::getFlightRequest, requestId, ServiceErrorWaitForRetryException.class, 6 );
             } catch (NotFoundException notFoundException) {
                 throw new FlightRequestNotFoundException();
             }
@@ -75,8 +62,36 @@ public class OrderService {
         return flightOrderId;
     }
 
-    private static class FlightRequestNotFoundException extends NotFoundException {
+    private String getFlightRequest(String requestId) {
+        String flightOrderId;
+        try {
+            final FlightRequestResponse response = extractClientResponse(inventoryTicketPriceClient.getFlightRequest(requestId));
+            flightOrderId = response.getFlightOrderId();
+        } catch (ServiceErrorException e) {
+            throw new ServiceErrorWaitForRetryException();
+        }
+        return flightOrderId;
     }
+
+    private <T, R, E> R retryMethod(Function<T, R> function, T t, Class<E> exception, int maxRetryTime) {
+        return _retryMethod(function, t,  0, maxRetryTime, exception);
+    }
+
+    private <T, R, E> R _retryMethod(Function<T, R> function, T t, int retryTime, int maxRetryTime, Class<E> exception) {
+        if (retryTime == maxRetryTime) throw new ServiceErrorException();
+        try {
+            return function.apply(t);
+        } catch (Throwable e) {
+            if (exception.isInstance(e)) {
+                return _retryMethod(function, t, retryTime + 1, maxRetryTime, exception);
+            } else {
+                throw e;
+            }
+        }
+    }
+
+    private static class ServiceErrorWaitForRetryException extends ServiceErrorException {}
+    private static class FlightRequestNotFoundException extends NotFoundException {}
 
     private <T> T extractClientResponse(ClientResponse<T> clientResponse) {
         final Integer code = clientResponse.getCode();
