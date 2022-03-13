@@ -1,0 +1,19 @@
+{
+  "request": {
+    "method": "GET",
+    "url": "/flight-requests/124"
+  },
+  "response": {
+    "status": 200,
+    "jsonBody": {
+      "code": 0,
+      "msg": "",
+      "data": {
+        "flight_order_id": "5d8y6v"
+      }
+    },
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}

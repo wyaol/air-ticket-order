@@ -5,6 +5,7 @@ import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 import com.github.tomakehurst.wiremock.http.trafficlistener.ConsoleNotifyingWiremockNetworkTrafficListener;
 import com.thoughtworks.airticketorder.client.request.InventoryLockRequest;
 import com.thoughtworks.airticketorder.client.response.ClientResponse;
+import com.thoughtworks.airticketorder.client.response.FlightRequestResponse;
 import com.thoughtworks.airticketorder.client.response.InventoryLockResponse;
 import com.thoughtworks.airticketorder.dto.ClassType;
 import com.thoughtworks.airticketorder.exceptions.ThirdServiceException;
@@ -52,5 +53,12 @@ public class InventoryTicketPriceClientTest {
         InventoryLockRequest build = InventoryLockRequest.builder().requestId("124").classType(ClassType.ECONOMY).flightId("096750").build();
         assertThrows(ThirdServiceException.class, () -> inventoryTicketPriceClient
                 .lockInventory(build));
+    }
+
+    @Test
+    void shouldGetFlightRequestSuccess() {
+        ClientResponse<FlightRequestResponse> response = inventoryTicketPriceClient
+                .getFlightRequest("124");
+        assertEquals("5d8y6v", response.getData().getFlightOrderId());
     }
 }
