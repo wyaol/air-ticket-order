@@ -5,7 +5,7 @@ import com.thoughtworks.airticketorder.client.request.InventoryLockRequest;
 import com.thoughtworks.airticketorder.client.response.ClientResponse;
 import com.thoughtworks.airticketorder.client.response.FlightRequestResponse;
 import com.thoughtworks.airticketorder.client.response.InventoryLockResponse;
-import com.thoughtworks.airticketorder.exceptions.ThirdServiceException;
+import com.thoughtworks.airticketorder.exceptions.ServiceErrorException;
 import com.thoughtworks.airticketorder.repository.OrderRepository;
 import com.thoughtworks.airticketorder.repository.entity.OrderEntity;
 import com.thoughtworks.airticketorder.service.dto.OrderCreate;
@@ -30,7 +30,7 @@ public class OrderService {
                     orderCreate.getFlightId(), orderCreate.getClassType(), requestId
             ));
             flightOrderId = response.getData().getFlightOrderId();
-        } catch (ThirdServiceException e) {
+        } catch (ServiceErrorException e) {
             final ClientResponse<FlightRequestResponse> response = inventoryTicketPriceClient.getFlightRequest(requestId);
             flightOrderId = response.getData().getFlightOrderId();
         }

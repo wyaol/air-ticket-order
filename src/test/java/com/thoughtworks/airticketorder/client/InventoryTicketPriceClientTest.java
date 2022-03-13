@@ -8,7 +8,8 @@ import com.thoughtworks.airticketorder.client.response.ClientResponse;
 import com.thoughtworks.airticketorder.client.response.FlightRequestResponse;
 import com.thoughtworks.airticketorder.client.response.InventoryLockResponse;
 import com.thoughtworks.airticketorder.dto.ClassType;
-import com.thoughtworks.airticketorder.exceptions.ThirdServiceException;
+import com.thoughtworks.airticketorder.exceptions.NotFoundException;
+import com.thoughtworks.airticketorder.exceptions.ServiceErrorException;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -51,7 +52,7 @@ public class InventoryTicketPriceClientTest {
     @Test
     void shouldThrowThirdServiceExceptionWhenResponseCodeIs500() {
         InventoryLockRequest build = InventoryLockRequest.builder().requestId("124").classType(ClassType.ECONOMY).flightId("096750").build();
-        assertThrows(ThirdServiceException.class, () -> inventoryTicketPriceClient
+        assertThrows(ServiceErrorException.class, () -> inventoryTicketPriceClient
                 .lockInventory(build));
     }
 
@@ -60,5 +61,10 @@ public class InventoryTicketPriceClientTest {
         ClientResponse<FlightRequestResponse> response = inventoryTicketPriceClient
                 .getFlightRequest("124");
         assertEquals("5d8y6v", response.getData().getFlightOrderId());
+    }
+
+    @Test
+    void shouldThrowNotFoundExceptionWhenGetFlightRequestReturn404() {
+        assertThrows(NotFoundException.class, () -> inventoryTicketPriceClient.getFlightRequest("125"));
     }
 }
