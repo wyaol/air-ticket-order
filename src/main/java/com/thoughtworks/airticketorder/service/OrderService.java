@@ -26,7 +26,7 @@ public class OrderService {
     private OrderRepository orderRepository;
 
     private static final Map<Integer, RuntimeException> CLIENT_CODE_TO_EXCEPTION = Map.of(
-            4001, new InventoryShortageException()
+            4001, new InventoryShortageException(4001, "inventory is not enough")
     );
 
     public OrderCreated createOrder(OrderCreate orderCreate) {

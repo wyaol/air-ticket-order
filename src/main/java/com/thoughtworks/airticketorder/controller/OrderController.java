@@ -3,12 +3,14 @@ package com.thoughtworks.airticketorder.controller;
 import com.thoughtworks.airticketorder.controller.request.OrderCreateRequest;
 import com.thoughtworks.airticketorder.controller.response.OrderCreateResponse;
 import com.thoughtworks.airticketorder.controller.response.Response;
+import com.thoughtworks.airticketorder.exceptions.BusinessException;
 import com.thoughtworks.airticketorder.service.OrderService;
 import com.thoughtworks.airticketorder.service.dto.OrderCreate;
 import com.thoughtworks.airticketorder.service.dto.OrderCreated;
 import com.thoughtworks.airticketorder.util.ObjectMapperUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -33,6 +35,12 @@ public class OrderController {
         orderCreate.setUserId(userId);
         final OrderCreated orderCreated = orderService.createOrder(orderCreate);
         return Response.success(ObjectMapperUtil.convert(orderCreated, OrderCreateResponse.class));
+    }
+
+    @ExceptionHandler(BusinessException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Response<Object> handlerBusinessException(BusinessException businessException) {
+        return new Response<>(businessException.getCode(), businessException.getMsg(), null);
     }
 
 }
