@@ -7,6 +7,7 @@ import com.thoughtworks.airticketorder.client.request.InventoryLockRequest;
 import com.thoughtworks.airticketorder.client.response.ClientResponse;
 import com.thoughtworks.airticketorder.client.response.InventoryLockResponse;
 import com.thoughtworks.airticketorder.dto.ClassType;
+import com.thoughtworks.airticketorder.exceptions.ThirdServiceException;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -15,6 +16,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @EnableFeignClients(basePackages = "com.thoughtworks.airticketorder.client.*")
@@ -41,7 +43,14 @@ public class InventoryTicketPriceClientTest {
     void shouldLockInventorySuccess() {
         ClientResponse<InventoryLockResponse> response = inventoryTicketPriceClient
                 .lockInventory(
-                        InventoryLockRequest.builder().requestId("123").classType(ClassType.ECONOMY).flightId("096749") .build());
+                        InventoryLockRequest.builder().requestId("123").classType(ClassType.ECONOMY).flightId("096749").build());
         assertEquals("5d8y6v", response.getData().getFlightOrderId());
+    }
+
+    @Test
+    void shouldThrowThirdServiceExceptionWhenResponseCodeIs500() {
+        InventoryLockRequest build = InventoryLockRequest.builder().requestId("124").classType(ClassType.ECONOMY).flightId("096750").build();
+        assertThrows(ThirdServiceException.class, () -> inventoryTicketPriceClient
+                .lockInventory(build));
     }
 }
