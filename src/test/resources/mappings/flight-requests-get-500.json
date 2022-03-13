@@ -1,10 +1,10 @@
 {
   "request": {
     "method": "GET",
-    "url": "/flight-requests/125"
+    "url": "/flight-requests/126"
   },
   "response": {
-    "status": 404,
+    "status": 500,
     "jsonBody": {},
     "headers": {
       "Content-Type": "application/json"
