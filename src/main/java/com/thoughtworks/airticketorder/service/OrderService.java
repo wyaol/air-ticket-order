@@ -5,6 +5,7 @@ import com.thoughtworks.airticketorder.client.request.InventoryLockRequest;
 import com.thoughtworks.airticketorder.client.response.ClientResponse;
 import com.thoughtworks.airticketorder.client.response.FlightRequestResponse;
 import com.thoughtworks.airticketorder.client.response.InventoryLockResponse;
+import com.thoughtworks.airticketorder.exceptions.InventoryShortageException;
 import com.thoughtworks.airticketorder.exceptions.NotFoundException;
 import com.thoughtworks.airticketorder.exceptions.ServiceErrorException;
 import com.thoughtworks.airticketorder.repository.OrderRepository;
@@ -14,8 +15,8 @@ import com.thoughtworks.airticketorder.service.dto.OrderCreated;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.Map;
 import java.util.UUID;
-import java.util.function.Function;
 
 @Service
 @RequiredArgsConstructor
@@ -23,6 +24,10 @@ public class OrderService {
     private InventoryTicketPriceClient inventoryTicketPriceClient;
 
     private OrderRepository orderRepository;
+
+    private static final Map<Integer, RuntimeException> CLIENT_CODE_TO_EXCEPTION = Map.of(
+            4001, new InventoryShortageException()
+    );
 
     public OrderCreated createOrder(OrderCreate orderCreate) {
         String flightOrderId = getFlightOrderId(orderCreate);
@@ -54,14 +59,15 @@ public class OrderService {
         final String requestId = UUID.randomUUID().toString();
         String flightOrderId;
         try {
-            final ClientResponse<InventoryLockResponse> response = inventoryTicketPriceClient.lockInventory(new InventoryLockRequest(
-                    orderCreate.getFlightId(), orderCreate.getClassType(), requestId
-            ));
-            flightOrderId = response.getData().getFlightOrderId();
+            final InventoryLockResponse response = extractClientResponse(inventoryTicketPriceClient.lockInventory(
+                    new InventoryLockRequest(
+                            orderCreate.getFlightId(), orderCreate.getClassType(), requestId
+                    )));
+            flightOrderId = response.getFlightOrderId();
         } catch (ServiceErrorException e) {
             try {
-                final ClientResponse<FlightRequestResponse> response = inventoryTicketPriceClient.getFlightRequest(requestId);
-                flightOrderId = response.getData().getFlightOrderId();
+                final FlightRequestResponse response = extractClientResponse(inventoryTicketPriceClient.getFlightRequest(requestId));
+                flightOrderId = response.getFlightOrderId();
             } catch (NotFoundException notFoundException) {
                 throw new FlightRequestNotFoundException();
             }
@@ -69,5 +75,15 @@ public class OrderService {
         return flightOrderId;
     }
 
-    private static class FlightRequestNotFoundException extends NotFoundException { }
+    private static class FlightRequestNotFoundException extends NotFoundException {
+    }
+
+    private <T> T extractClientResponse(ClientResponse<T> clientResponse) {
+        final Integer code = clientResponse.getCode();
+        if (code != 0) {
+            if (CLIENT_CODE_TO_EXCEPTION.containsKey(code)) throw CLIENT_CODE_TO_EXCEPTION.get(code);
+            throw new ServiceErrorException();
+        }
+        return clientResponse.getData();
+    }
 }

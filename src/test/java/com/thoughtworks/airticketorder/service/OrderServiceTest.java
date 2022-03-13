@@ -5,6 +5,7 @@ import com.thoughtworks.airticketorder.client.response.ClientResponse;
 import com.thoughtworks.airticketorder.client.response.FlightRequestResponse;
 import com.thoughtworks.airticketorder.client.response.InventoryLockResponse;
 import com.thoughtworks.airticketorder.dto.ClassType;
+import com.thoughtworks.airticketorder.exceptions.InventoryShortageException;
 import com.thoughtworks.airticketorder.exceptions.NotFoundException;
 import com.thoughtworks.airticketorder.exceptions.ServiceErrorException;
 import com.thoughtworks.airticketorder.repository.OrderRepository;
@@ -20,6 +21,7 @@ import org.mockito.MockitoAnnotations;
 import java.math.BigDecimal;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
@@ -85,6 +87,18 @@ class OrderServiceTest {
                 new OrderCreate(123, "flightId", ClassType.ECONOMY, BigDecimal.valueOf(2000)));
 
         assertEquals(234, orderCreated.getId());
+    }
+
+    @Test
+    void shouldThrowInventoryShortageExceptionWhenGetLockInventoryResponseCodeIs4001() {
+        when(orderRepository.save(any())).thenReturn(
+                OrderEntity.builder().id(234) .build()
+        );
+        when(inventoryTicketPriceClient.lockInventory(any()))
+                .thenReturn(new ClientResponse<>(4001, "inventory is not enough", null));
+
+        assertThrows(InventoryShortageException.class, () -> orderService.createOrder(
+                new OrderCreate(123, "flightId", ClassType.ECONOMY, BigDecimal.valueOf(2000))));
     }
 
 }
