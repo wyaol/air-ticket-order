@@ -91,9 +91,6 @@ class OrderServiceTest {
 
     @Test
     void shouldThrowInventoryShortageExceptionWhenGetLockInventoryResponseCodeIs4001() {
-        when(orderRepository.save(any())).thenReturn(
-                OrderEntity.builder().id(234) .build()
-        );
         when(inventoryTicketPriceClient.lockInventory(any()))
                 .thenReturn(new ClientResponse<>(4001, "inventory is not enough", null));
 
@@ -103,9 +100,6 @@ class OrderServiceTest {
 
     @Test
     void shouldThrowServiceErrorExceptionWhenGetFlightRequestFailedSixTimes() {
-        when(orderRepository.save(any())).thenReturn(
-                OrderEntity.builder().id(234) .build()
-        );
         when(inventoryTicketPriceClient.lockInventory(any()))
                 .thenThrow(new ServiceErrorException());
         when(inventoryTicketPriceClient.getFlightRequest(any()))
@@ -118,27 +112,6 @@ class OrderServiceTest {
 
         assertThrows(ServiceErrorException.class, () -> orderService.createOrder(
                 new OrderCreate(123, "flightId", ClassType.ECONOMY, BigDecimal.valueOf(2000))));
-    }
-
-    @Test
-    void shouldCreateOrderSuccessWhenGetFlightRequestFailedAtSixTimes() {
-        when(orderRepository.save(any())).thenReturn(
-                OrderEntity.builder().id(234) .build()
-        );
-        when(inventoryTicketPriceClient.lockInventory(any()))
-                .thenThrow(new ServiceErrorException());
-        when(inventoryTicketPriceClient.getFlightRequest(any()))
-                .thenThrow(new ServiceErrorException())
-                .thenThrow(new ServiceErrorException())
-                .thenThrow(new ServiceErrorException())
-                .thenThrow(new ServiceErrorException())
-                .thenThrow(new ServiceErrorException())
-                .thenReturn(new ClientResponse<>(0, "", new FlightRequestResponse("5d8y6v")));
-
-        final OrderCreated orderCreated = orderService.createOrder(
-                new OrderCreate(123, "flightId", ClassType.ECONOMY, BigDecimal.valueOf(2000)));
-
-        assertEquals(234, orderCreated.getId());
     }
 
 }
