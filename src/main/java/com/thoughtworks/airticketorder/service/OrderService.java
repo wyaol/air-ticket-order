@@ -10,6 +10,7 @@ import com.thoughtworks.airticketorder.exceptions.NotFoundException;
 import com.thoughtworks.airticketorder.exceptions.ServiceErrorException;
 import com.thoughtworks.airticketorder.repository.OrderRepository;
 import com.thoughtworks.airticketorder.repository.entity.OrderEntity;
+import com.thoughtworks.airticketorder.service.dto.InvoiceSource;
 import com.thoughtworks.airticketorder.service.dto.OrderCreate;
 import com.thoughtworks.airticketorder.service.dto.OrderCreated;
 import feign.FeignException;
@@ -89,6 +90,10 @@ public class OrderService {
                 throw e;
             }
         }
+    }
+
+    public void createInvoice(InvoiceSource invoiceSource) {
+
     }
 
     private static class ServiceErrorWaitForRetryException extends ServiceErrorException {}
