@@ -1,0 +1,19 @@
+{
+  "request": {
+    "method": "GET",
+    "url": "/flight-orders/5d8y6v"
+  },
+  "response": {
+    "status": 200,
+    "jsonBody": {
+      "code": 0,
+      "msg": "",
+      "data": {
+        "amount": 1000
+      }
+    },
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}

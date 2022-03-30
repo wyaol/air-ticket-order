@@ -5,6 +5,7 @@ import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 import com.github.tomakehurst.wiremock.http.trafficlistener.ConsoleNotifyingWiremockNetworkTrafficListener;
 import com.thoughtworks.airticketorder.client.request.InventoryLockRequest;
 import com.thoughtworks.airticketorder.client.response.ClientResponse;
+import com.thoughtworks.airticketorder.client.response.FlightOrderResponse;
 import com.thoughtworks.airticketorder.client.response.FlightRequestResponse;
 import com.thoughtworks.airticketorder.client.response.InventoryLockResponse;
 import com.thoughtworks.airticketorder.dto.ClassType;
@@ -16,6 +17,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cloud.openfeign.EnableFeignClients;
+
+import java.math.BigDecimal;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -59,5 +62,12 @@ public class InventoryTicketPriceClientTest {
     @Test
     void shouldThrowNotFoundExceptionWhenGetFlightRequestReturn404() {
         assertThrows(NotFoundException.class, () -> inventoryTicketPriceClient.getFlightRequest("125"));
+    }
+
+    @Test
+    void shouldGetFlightOrderSuccess() {
+        ClientResponse<FlightOrderResponse> response = inventoryTicketPriceClient
+                .getFlightOrder("5d8y6v");
+        assertEquals(BigDecimal.valueOf(1000), response.getData().getAmount());
     }
 }
