@@ -50,13 +50,6 @@ public class InventoryTicketPriceClientTest {
     }
 
     @Test
-    void shouldThrowServiceErrorExceptionWhenResponseCodeIs500() {
-        InventoryLockRequest build = InventoryLockRequest.builder().requestId("124").classType(ClassType.ECONOMY).flightId("096750").build();
-        assertThrows(ServiceErrorException.class, () -> inventoryTicketPriceClient
-                .lockInventory(build));
-    }
-
-    @Test
     void shouldGetFlightRequestSuccess() {
         ClientResponse<FlightRequestResponse> response = inventoryTicketPriceClient
                 .getFlightRequest("124");
@@ -66,11 +59,5 @@ public class InventoryTicketPriceClientTest {
     @Test
     void shouldThrowNotFoundExceptionWhenGetFlightRequestReturn404() {
         assertThrows(NotFoundException.class, () -> inventoryTicketPriceClient.getFlightRequest("125"));
-    }
-
-    @Test
-    void shouldThrowServiceErrorExceptionWhenGetFlightRequestResponseCodeIs500() {
-        assertThrows(ServiceErrorException.class, () -> inventoryTicketPriceClient
-                .getFlightRequest("126"));
     }
 }

@@ -12,6 +12,7 @@ import com.thoughtworks.airticketorder.repository.OrderRepository;
 import com.thoughtworks.airticketorder.repository.entity.OrderEntity;
 import com.thoughtworks.airticketorder.service.dto.OrderCreate;
 import com.thoughtworks.airticketorder.service.dto.OrderCreated;
+import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -52,9 +53,9 @@ public class OrderService {
                             orderCreate.getFlightId(), orderCreate.getClassType(), requestId
                     )));
             flightOrderId = response.getFlightOrderId();
-        } catch (ServiceErrorException e) {
+        } catch (FeignException.GatewayTimeout e) {
             try {
-                flightOrderId = retryMethod(this::getFlightRequest, requestId, ServiceErrorWaitForRetryException.class, 6 );
+                flightOrderId = retryMethod(this::getFlightRequest, requestId, FeignException.GatewayTimeout.class, 6 );
             } catch (NotFoundException notFoundException) {
                 throw new FlightRequestNotFoundException();
             }
