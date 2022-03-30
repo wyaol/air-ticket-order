@@ -19,4 +19,8 @@ public class InvoiceService {
         invoiceEntity.setStatus(InvoiceStatus.NOT_ISSUE);
         return invoiceRepository.save(invoiceEntity).getId();
     }
+
+    public void requestInvoices() {
+
+    }
 }
