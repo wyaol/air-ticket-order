@@ -1,0 +1,29 @@
+{
+  "request": {
+    "method": "POST",
+    "url": "/invoices",
+    "bodyPatterns": [
+      {
+        "equalToJson": {
+          "address": "address",
+          "bank": "bank",
+          "bank_account": "bankAccount",
+          "email": "email",
+          "number": "number",
+          "amount": 1000
+        }
+      }
+    ]
+  },
+  "response": {
+    "status": 200,
+    "jsonBody": {
+      "code": 0,
+      "msg": "",
+      "data": null
+    },
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}

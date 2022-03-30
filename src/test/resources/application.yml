@@ -13,3 +13,5 @@ spring:
 services:
   inventory-ticket-price:
     url: http://127.0.0.1:8001
+  invoice-issue:
+    url: http://127.0.0.1:8002
