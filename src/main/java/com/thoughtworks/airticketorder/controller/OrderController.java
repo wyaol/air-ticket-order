@@ -6,12 +6,12 @@ import com.thoughtworks.airticketorder.controller.response.OrderCreateResponse;
 import com.thoughtworks.airticketorder.controller.response.Response;
 import com.thoughtworks.airticketorder.exceptions.BusinessException;
 import com.thoughtworks.airticketorder.exceptions.ServiceErrorException;
+import com.thoughtworks.airticketorder.service.InvoiceService;
 import com.thoughtworks.airticketorder.service.OrderService;
 import com.thoughtworks.airticketorder.service.dto.InvoiceSource;
 import com.thoughtworks.airticketorder.service.dto.OrderCreate;
 import com.thoughtworks.airticketorder.service.dto.OrderCreated;
 import com.thoughtworks.airticketorder.util.ObjectMapperUtil;
-import feign.RetryableException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -29,6 +29,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class OrderController {
 
     private final OrderService orderService;
+    private final InvoiceService invoiceService;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
@@ -50,7 +51,7 @@ public class OrderController {
     ) {
         final InvoiceSource invoiceSource = ObjectMapperUtil.convert(invoiceRequest, InvoiceSource.class);
         invoiceSource.setFlightOrderId(flightOrderId);
-        orderService.createInvoice(invoiceSource);
+        invoiceService.createInvoice(invoiceSource);
         return Response.success(null);
     }
 

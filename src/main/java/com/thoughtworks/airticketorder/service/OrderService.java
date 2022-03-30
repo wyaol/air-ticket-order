@@ -92,10 +92,6 @@ public class OrderService {
         }
     }
 
-    public void createInvoice(InvoiceSource invoiceSource) {
-
-    }
-
     private static class ServiceErrorWaitForRetryException extends ServiceErrorException {}
     private static class FlightRequestNotFoundException extends NotFoundException {}
 

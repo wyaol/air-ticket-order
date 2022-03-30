@@ -6,6 +6,7 @@ import com.thoughtworks.airticketorder.controller.request.OrderCreateRequest;
 import com.thoughtworks.airticketorder.dto.ClassType;
 import com.thoughtworks.airticketorder.exceptions.InventoryShortageException;
 import com.thoughtworks.airticketorder.exceptions.ServiceErrorException;
+import com.thoughtworks.airticketorder.service.InvoiceService;
 import com.thoughtworks.airticketorder.service.OrderService;
 import com.thoughtworks.airticketorder.service.dto.OrderCreated;
 import org.junit.jupiter.api.BeforeEach;
@@ -33,6 +34,9 @@ class OrderControllerTest {
 
     @Mock
     private OrderService orderService;
+
+    @Mock
+    private InvoiceService invoiceService;
 
     @InjectMocks
     private OrderController orderController;
@@ -107,7 +111,7 @@ class OrderControllerTest {
 
     @Test
     void shouldCreateInvoiceRequestSuccess() throws Exception {
-        doNothing().when(orderService).createInvoice(any());
+        doNothing().when(invoiceService).createInvoice(any());
 
         mockMvc.perform(post("/air-ticket-orders/126/invoice")
                 .header("userId", 123)
